@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Trimmr Engagement Operations Plan</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutrals -->
+    <!-- Application Structure Plan: A task-oriented interactive dashboard. A top navigation bar allows switching between engagement phases (Prep, Plan, Execute, Follow-up). Below this, filters allow users to view tasks by Responsible Role or by Tool/System. This structure was chosen to transform a dense, linear document into an actionable tool. Users can quickly isolate their specific responsibilities or see all tasks associated with a particular system, which is far more efficient for day-to-day use than reading a static manual. The user flow is: select a phase (or view all), then apply filters to drill down into the details. -->
+    <!-- Visualization & Content Choices: Report Info -> Operations Manual. Goal -> Organize, Inform, Filter. Viz/Presentation -> Interactive checklist/task list using HTML/CSS/JS. Interaction -> Clicking phase links scrolls to the section. Clicking role/tool filters dynamically shows/hides relevant tasks using data attributes and JS. Justification -> This turns a passive document into an active tool, improving usability and task discovery for the operations team. Library/Method -> Vanilla JS for interaction, Tailwind CSS for layout. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f7f4;
+            color: #3d3d3d;
+        }
+        .nav-link {
+            transition: all 0.3s ease;
+            border-bottom: 2px solid transparent;
+        }
+        .nav-link.active, .nav-link:hover {
+            color: #c084fc; /* purple-400 */
+            border-bottom-color: #c084fc;
+        }
+        .filter-btn {
+            transition: all 0.3s ease;
+        }
+        .filter-btn.active {
+            background-color: #a855f7; /* purple-600 */
+            color: #ffffff;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+        .task-card {
+            transition: all 0.5s ease-in-out;
+            will-change: transform, opacity;
+        }
+        .task-item {
+             will-change: opacity, max-height, padding, margin;
+        }
+        .hidden-item {
+            opacity: 0;
+            max-height: 0;
+            padding-top: 0;
+            padding-bottom: 0;
+            margin-top: 0;
+            margin-bottom: 0;
+            overflow: hidden;
+        }
+        .visible-item {
+            opacity: 1;
+            max-height: 500px; /* Arbitrary large value */
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <div class="min-h-screen">
+        <!-- Header -->
+        <header class="bg-white/80 backdrop-blur-lg shadow-sm sticky top-0 z-50">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex flex-col sm:flex-row items-center justify-between py-4">
+                    <h1 class="text-2xl font-bold text-gray-800 mb-4 sm:mb-0">Trimmr Engagement Operations Plan</h1>
+                    <nav id="phase-nav" class="flex flex-wrap justify-center space-x-4 sm:space-x-6">
+                        <a href="#preparation" class="nav-link text-sm font-medium text-gray-600 py-2">Preparation</a>
+                        <a href="#planning" class="nav-link text-sm font-medium text-gray-600 py-2">Planning</a>
+                        <a href="#execution" class="nav-link text-sm font-medium text-gray-600 py-2">Execution</a>
+                        <a href="#follow-up" class="nav-link text-sm font-medium text-gray-600 py-2">Follow-up</a>
+                         <a href="#tools" class="nav-link text-sm font-medium text-gray-600 py-2">Tools</a>
+                    </nav>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="container mx-auto p-4 sm:p-6 lg:p-8">
+
+            <!-- Filters -->
+            <div class="bg-white p-6 rounded-2xl shadow-md mb-8">
+                <div id="filter-section">
+                    <div class="mb-6">
+                        <h3 class="text-lg font-semibold text-gray-700 mb-3">Filter by Responsible Role:</h3>
+                        <div id="role-filters" class="flex flex-wrap gap-2">
+                            <button class="filter-btn active bg-gray-200 text-gray-800 py-2 px-4 rounded-full text-sm font-medium" data-filter="all" data-filter-group="role">All Roles</button>
+                            <button class="filter-btn bg-gray-200 text-gray-800 py-2 px-4 rounded-full text-sm font-medium" data-filter="Ops" data-filter-group="role">Ops General</button>
+                            <button class="filter-btn bg-gray-200 text-gray-800 py-2 px-4 rounded-full text-sm font-medium" data-filter="Engagement Manager" data-filter-group="role">Engagement Manager</button>
+                            <button class="filter-btn bg-gray-200 text-gray-800 py-2 px-4 rounded-full text-sm font-medium" data-filter="Ops Admin" data-filter-group="role">Ops Admin</button>
+                             <button class="filter-btn bg-gray-200 text-gray-800 py-2 px-4 rounded-full text-sm font-medium" data-filter="Scheduler" data-filter-group="role">Scheduler</button>
+                            <button class="filter-btn bg-gray-200 text-gray-800 py-2 px-4 rounded-full text-sm font-medium" data-filter="Depot Manager" data-filter-group="role">Depot Manager</button>
+                             <button class="filter-btn bg-gray-200 text-gray-800 py-2 px-4 rounded-full text-sm font-medium" data-filter="Sales" data-filter-group="role">Sales</button>
+                            <button class="filter-btn bg-gray-200 text-gray-800 py-2 px-4 rounded-full text-sm font-medium" data-filter="Crew Lead" data-filter-group="role">Crew Lead</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Task Sections -->
+            <div id="task-container" class="space-y-12">
+                
+                <!-- Preparation Phase -->
+                <section id="preparation" class="scroll-mt-24">
+                    <h2 class="text-3xl font-bold text-gray-800 mb-6 border-b-2 border-purple-200 pb-2">1. Preparation Phase (Post-Sales Handoff)</h2>
+                    <p class="mb-8 text-gray-600">This phase begins immediately after Sales has secured a new engagement and handed off the client. It covers the initial project setup, scheduling, and client onboarding to lay the groundwork for a successful engagement.</p>
+                    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <!-- Card: Internal Handoff -->
+                        <div class="task-card bg-white p-6 rounded-2xl shadow-lg" data-role="Ops,Engagement Manager,Ops Admin">
+                            <h3 class="text-xl font-semibold mb-4 text-purple-700">1.1 Internal Handoff & Project Setup</h3>
+                            <ul class="space-y-3 text-gray-700">
+                                <li class="task-item flex items-start" data-role="Ops"><span class="mr-2 text-purple-500">&#10003;</span>Receive Handoff from Sales</li>
+                                <li class="task-item flex items-start" data-role="Ops"><span class="mr-2 text-purple-500">&#10003;</span>Confirm tax forms, estimate approval, & deposit</li>
+                                <li class="task-item flex items-start" data-role="Ops" data-tool="HubSpot"><span class="mr-2 text-purple-500">&#10003;</span>Create project entry in HubSpot</li>
+                                <li class="task-item flex items-start" data-role="Engagement Manager,Ops Admin"><span class="mr-2 text-purple-500">&#10003;</span>Assign Engagement Manager & Ops Admin</li>
+                                <li class="task-item flex items-start" data-role="Ops"><span class="mr-2 text-purple-500">&#10003;</span>Create internal project folders</li>
+                            </ul>
+                        </div>
+                        <!-- Card: Scheduling -->
+                         <div class="task-card bg-white p-6 rounded-2xl shadow-lg" data-role="Ops Admin,Scheduler">
+                            <h3 class="text-xl font-semibold mb-4 text-purple-700">1.2 Scheduling & Crew Assignment</h3>
+                            <ul class="space-y-3 text-gray-700">
+                                <li class="task-item flex items-start" data-role="Ops Admin,Scheduler" data-tool="ConnecTeams"><span class="mr-2 text-purple-500">&#10003;</span>Poll Crew Availability via ConnecTeams</li>
+                                <li class="task-item flex items-start" data-role="Ops Admin"><span class="mr-2 text-purple-500">&#10003;</span>Offer dates to client</li>
+                                <li class="task-item flex items-start" data-role="Scheduler" data-tool="ConnecTeams"><span class="mr-2 text-purple-500">&#10003;</span>Confirm dates & finalize in ConnecTeams</li>
+                                <li class="task-item flex items-start" data-role="Scheduler" data-tool="ConnecTeams"><span class="mr-2 text-purple-500">&#10003;</span>Publish shifts & assign crew</li>
+                                <li class="task-item flex items-start" data-role="Scheduler" data-tool="ConnecTeams"><span class="mr-2 text-purple-500">&#10003;</span>Create ConnecTeams Engagement Group Chat</li>
+                            </ul>
+                        </div>
+                        <!-- Card: Client Onboarding -->
+                        <div class="task-card bg-white p-6 rounded-2xl shadow-lg" data-role="Engagement Manager">
+                            <h3 class="text-xl font-semibold mb-4 text-purple-700">1.3 Client Onboarding & Info Collection</h3>
+                            <ul class="space-y-3 text-gray-700">
+                                <li class="task-item flex items-start" data-role="Engagement Manager"><span class="mr-2 text-purple-500">&#10003;</span>Send Onboarding Document to client</li>
+                                <li class="task-item flex items-start" data-role="Engagement Manager" data-tool="Google Maps,Google Sheets/Forms"><span class="mr-2 text-purple-500">&#10003;</span>Request client actions (Map, SOPs, Intake Form)</li>
+                                <li class="task-item flex items-start" data-role="Engagement Manager"><span class="mr-2 text-purple-500">&#10003;</span>Initial call with On-site Manager</li>
+                                <li class="task-item flex items-start" data-role="Engagement Manager"><span class="mr-2 text-purple-500">&#10003;</span>Draft Engagement Plan</li>
+                                <li class="task-item flex items-start" data-role="Engagement Manager" data-tool="ConnecTeams"><span class="mr-2 text-purple-500">&#10003;</span>Share docs in ConnecTeams channel</li>
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+                
+                <!-- Planning Phase -->
+                <section id="planning" class="scroll-mt-24">
+                    <h2 class="text-3xl font-bold text-gray-800 mb-6 border-b-2 border-purple-200 pb-2">2. Planning Phase (Logistics & Resources)</h2>
+                     <p class="mb-8 text-gray-600">This phase involves the meticulous planning for all physical assets, equipment, and supplies required for the engagement. It's about getting the right gear to the right place at the right time.</p>
+                    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                         <!-- Card: Trailer & Equipment -->
+                        <div class="task-card bg-white p-6 rounded-2xl shadow-lg" data-role="Depot Manager,Scheduler,Ops">
+                            <h3 class="text-xl font-semibold mb-4 text-purple-700">2.1 Trailer & Equipment Logistics</h3>
+                            <ul class="space-y-3 text-gray-700">
+                                <li class="task-item flex items-start" data-role="Depot Manager"><span class="mr-2 text-purple-500">&#10003;</span>Schedule & oversee "Depot Day" for Trailer Pre-Flight</li>
+                                <li class="task-item flex items-start" data-role="Depot Manager,Scheduler"><span class="mr-2 text-purple-500">&#10003;</span>Define truck plan and logistics</li>
+                                <li class="task-item flex items-start" data-role="Ops"><span class="mr-2 text-purple-500">&#10003;</span>Confirm and insure Trailer Delivery Service</li>
+                                <li class="task-item flex items-start" data-role="Ops"><span class="mr-2 text-purple-500">&#10003;</span>Provide driver copy of insurance</li>
+                                 <li class="task-item flex items-start" data-role="Depot Manager"><span class="mr-2 text-purple-500">&#10003;</span>Confirm Driver readiness (access, Wex card, fuel plan)</li>
+                            </ul>
+                        </div>
+                        <!-- Card: Inventory & Asset -->
+                        <div class="task-card bg-white p-6 rounded-2xl shadow-lg" data-role="Depot Manager">
+                            <h3 class="text-xl font-semibold mb-4 text-purple-700">2.2 Inventory & Asset Management</h3>
+                            <ul class="space-y-3 text-gray-700">
+                                <li class="task-item flex items-start" data-role="Depot Manager" data-tool="Google Sheets/Forms"><span class="mr-2 text-purple-500">&#10003;</span>Define Inventory List using config file</li>
+                                <li class="task-item flex items-start" data-role="Depot Manager"><span class="mr-2 text-purple-500">&#10003;</span>Define Asset List based on contract</li>
+                                <li class="task-item flex items-start" data-role="Depot Manager"><span class="mr-2 text-purple-500">&#10003;</span>Pack consumables, PPE, and lab coats</li>
+                                <li class="task-item flex items-start" data-role="Depot Manager" data-tool="Plant-Ops"><span class="mr-2 text-purple-500">&#10003;</span>Run through pre-flight packing list & install on Plant Ops</li>
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+                
+                <!-- Execution Phase -->
+                <section id="execution" class="scroll-mt-24">
+                    <h2 class="text-3xl font-bold text-gray-800 mb-6 border-b-2 border-purple-200 pb-2">3. Execution Phase (On-site Operations)</h2>
+                     <p class="mb-8 text-gray-600">This phase covers all activities performed during the actual engagement days on the client's site. Focus is on efficient operation, clear communication, and accurate data collection.</p>
+                    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <!-- Card: On-site Management -->
+                        <div class="task-card bg-white p-6 rounded-2xl shadow-lg" data-role="Crew Lead">
+                            <h3 class="text-xl font-semibold mb-4 text-purple-700">3.1 On-site Management & Communication</h3>
+                            <ul class="space-y-3 text-gray-700">
+                                <li class="task-item flex items-start" data-role="Crew Lead"><span class="mr-2 text-purple-500">&#10003;</span>Conduct daily morning huddle with crew</li>
+                                <li class="task-item flex items-start" data-role="Crew Lead"><span class="mr-2 text-purple-500">&#10003;</span>Coordinate with client's On-site Manager for quality & breaks</li>
+                                <li class="task-item flex items-start" data-role="Crew Lead"><span class="mr-2 text-purple-500">&#10003;</span>Ensure client manager directs quality and signs off on batches</li>
+                                <li class="task-item flex items-start" data-role="Crew Lead"><span class="mr-2 text-purple-500">&#10003;</span>Follow client-designated cleaning policies</li>
+                            </ul>
+                        </div>
+                         <!-- Card: Data Collection -->
+                        <div class="task-card bg-white p-6 rounded-2xl shadow-lg" data-role="Crew Lead,Engagement Manager">
+                            <h3 class="text-xl font-semibold mb-4 text-purple-700">3.2 Data Collection & Reporting</h3>
+                            <ul class="space-y-3 text-gray-700">
+                                <li class="task-item flex items-start" data-role="Crew Lead" data-tool="Plant-Ops"><span class="mr-2 text-purple-500">&#10003;</span>Create Job in Plant Ops at start</li>
+                                <li class="task-item flex items-start" data-role="Crew Lead" data-tool="Plant-Ops,Trimmr Tech Debug App"><span class="mr-2 text-purple-500">&#10003;</span>Utilize Plant-Ops & Debug App for data input</li>
+                                <li class="task-item flex items-start" data-role="Engagement Manager" data-tool="Plant-Ops"><span class="mr-2 text-purple-500">&#10003;</span>Remotely monitor progress in Plant Ops</li>
+                                <li class="task-item flex items-start" data-role="Engagement Manager"><span class="mr-2 text-purple-500">&#10003;</span>Coordinate with Tech team for remote assistance</li>
+                            </ul>
+                        </div>
+                        <!-- Card: End of Day -->
+                        <div class="task-card bg-white p-6 rounded-2xl shadow-lg" data-role="Crew Lead">
+                            <h3 class="text-xl font-semibold mb-4 text-purple-700">3.3 End of Day Procedures</h3>
+                            <ul class="space-y-3 text-gray-700">
+                                <li class="task-item flex items-start" data-role="Crew Lead"><span class="mr-2 text-purple-500">&#10003;</span>Stop trimming, begin cleaning and stowage</li>
+                                <li class="task-item flex items-start" data-role="Crew Lead" data-tool="Plant-Ops"><span class="mr-2 text-purple-500">&#10003;</span>Get end-of-day sign-off from client in Plant Ops</li>
+                                <li class="task-item flex items-start" data-role="Crew Lead"><span class="mr-2 text-purple-500">&#10003;</span>Oversee crew end of shift and departure</li>
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+                
+                <!-- Follow-up Phase -->
+                <section id="follow-up" class="scroll-mt-24">
+                    <h2 class="text-3xl font-bold text-gray-800 mb-6 border-b-2 border-purple-200 pb-2">4. Follow-up Phase (Post-Engagement)</h2>
+                     <p class="mb-8 text-gray-600">This final phase focuses on wrapping up the engagement, including final reporting, client communication, internal debriefs, and logistical close-out.</p>
+                    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <!-- Card: Reporting -->
+                        <div class="task-card bg-white p-6 rounded-2xl shadow-lg" data-role="Ops,Sales">
+                            <h3 class="text-xl font-semibold mb-4 text-purple-700">4.1 Reporting & Client Communication</h3>
+                            <ul class="space-y-3 text-gray-700">
+                                <li class="task-item flex items-start" data-role="Ops" data-tool="Plant-Ops"><span class="mr-2 text-purple-500">&#10003;</span>Generate End of Engagement Report from Plant Ops</li>
+                                <li class="task-item flex items-start" data-role="Sales"><span class="mr-2 text-purple-500">&#10003;</span>Approve End of Engagement Report</li>
+                                <li class="task-item flex items-start" data-role="Sales"><span class="mr-2 text-purple-500">&#10003;</span>Send report to client</li>
+                                <li class="task-item flex items-start" data-role="Ops"><span class="mr-2 text-purple-500">&#10003;</span>Schedule post-engagement follow-up call</li>
+                                <li class="task-item flex items-start" data-role="Ops"><span class="mr-2 text-purple-500">&#10003;</span>Notify accounting to issue final invoice</li>
+                                <li class="task-item flex items-start" data-role="Sales"><span class="mr-2 text-purple-500">&#10003;</span>Create weekly crew survey about client</li>
+                            </ul>
+                        </div>
+                        <!-- Card: Internal Logistics -->
+                        <div class="task-card bg-white p-6 rounded-2xl shadow-lg" data-role="Scheduler,Depot Manager,Ops">
+                            <h3 class="text-xl font-semibold mb-4 text-purple-700">4.2 Internal Logistics & Debrief</h3>
+                            <ul class="space-y-3 text-gray-700">
+                                <li class="task-item flex items-start" data-role="Scheduler"><span class="mr-2 text-purple-500">&#10003;</span>Cancel truck insurance</li>
+                                <li class="task-item flex items-start" data-role="Scheduler"><span class="mr-2 text-purple-500">&#10003;</span>Schedule Depot Day for trailer clean-up</li>
+                                <li class="task-item flex items-start" data-role="Depot Manager"><span class="mr-2 text-purple-500">&#10003;</span>Perform inventory check and restock</li>
+                                <li class="task-item flex items-start" data-role="Ops"><span class="mr-2 text-purple-500">&#10003;</span>Schedule internal post-engagement debrief</li>
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Tools & Systems -->
+                <section id="tools" class="scroll-mt-24">
+                    <h2 class="text-3xl font-bold text-gray-800 mb-6 border-b-2 border-purple-200 pb-2">5. Tools & Systems Used</h2>
+                     <p class="mb-8 text-gray-600">A quick reference guide to the primary software and platforms used throughout the engagement lifecycle. Understanding these tools is key to performing assigned tasks.</p>
+                    <div class="task-card bg-white p-6 rounded-2xl shadow-lg">
+                        <ul class="space-y-4">
+                            <li class="task-item" data-role="Ops"><strong class="text-purple-600">HubSpot:</strong> For internal ticket and task management (not for crew interaction).</li>
+                            <li class="task-item" data-role="Ops Admin,Scheduler,Engagement Manager,Crew Lead"><strong class="text-purple-600">ConnecTeams:</strong> For scheduling, crew communication, and group chats.</li>
+                            <li class="task-item" data-role="Depot Manager,Crew Lead,Engagement Manager,Ops"><strong class="text-purple-600">Plant-Ops:</strong> On-site data input (via trailer tablets), remote monitoring by Engagement Manager, and report generation.</li>
+                            <li class="task-item" data-role="Crew Lead"><strong class="text-purple-600">Trimmr Tech Debug App:</strong> On-site tool on trailer tablets for technical support and troubleshooting.</li>
+                            <li class="task-item" data-role="Engagement Manager"><strong class="text-purple-600">Google Maps:</strong> For client site assessment and mapping.</li>
+                            <li class="task-item" data-role="Engagement Manager,Depot Manager"><strong class="text-purple-600">Google Sheets/Forms:</strong> For inventory management, intake forms, and other data collection.</li>
+                        </ul>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const phaseNavLinks = document.querySelectorAll('#phase-nav a');
+            const roleFilterButtons = document.querySelectorAll('#role-filters .filter-btn');
+            const taskCards = document.querySelectorAll('.task-card');
+            const taskItems = document.querySelectorAll('.task-item');
+
+            // --- Phase Navigation ---
+            phaseNavLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    document.querySelector(link.getAttribute('href')).scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                });
+            });
+
+            // --- Intersection Observer for Active Nav Link ---
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        phaseNavLinks.forEach(link => {
+                            link.classList.toggle('active', link.getAttribute('href').slice(1) === entry.target.id);
+                        });
+                    }
+                });
+            }, { rootMargin: '-50% 0px -50% 0px' });
+
+            document.querySelectorAll('section').forEach(section => {
+                observer.observe(section);
+            });
+
+            // --- Filtering Logic ---
+            function applyFilters() {
+                const activeRoleFilter = document.querySelector('#role-filters .filter-btn.active').dataset.filter;
+
+                // Filter task items
+                taskItems.forEach(item => {
+                    const itemRoles = item.dataset.role ? item.dataset.role.split(',') : [];
+                    
+                    const roleMatch = activeRoleFilter === 'all' || itemRoles.includes(activeRoleFilter);
+
+                    if (roleMatch) {
+                        item.classList.remove('hidden-item');
+                        item.classList.add('visible-item');
+                        item.style.setProperty('transition', 'opacity 0.5s ease, max-height 0.5s ease, margin 0.5s ease, padding 0.5s ease');
+                    } else {
+                        item.classList.add('hidden-item');
+                        item.classList.remove('visible-item');
+                        item.style.setProperty('transition', 'opacity 0.3s ease, max-height 0.3s ease, margin 0.3s ease, padding 0.3s ease');
+                    }
+                });
+
+                // Filter task cards (hide card if all items within it are hidden)
+                 setTimeout(() => {
+                    taskCards.forEach(card => {
+                        const visibleItems = card.querySelectorAll('.task-item:not(.hidden-item)');
+                        if (visibleItems.length === 0 && activeRoleFilter !== 'all') {
+                            card.style.transform = 'scale(0.95)';
+                            card.style.opacity = '0';
+                            card.style.pointerEvents = 'none';
+                        } else {
+                            card.style.transform = 'scale(1)';
+                            card.style.opacity = '1';
+                            card.style.pointerEvents = 'auto';
+                        }
+                    });
+                }, 100);
+            }
+
+            roleFilterButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    roleFilterButtons.forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+                    applyFilters();
+                });
+            });
+
+            // Initial filter application
+            applyFilters();
+        });
+    </script>
+
+</body>
+</html>
